@@ -2,10 +2,7 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
 
-
-
 require('dotenv').config();
-
 
 const express = require('express');
 const app = express();
@@ -25,25 +22,27 @@ const mongoSanitize = require('express-mongo-sanitize');
 const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
-const { MongoStore } = require('connect-mongo');
 
 const MongoDBStore = require('connect-mongo')(session);
 
-const dbUrl = process.env.DB_URL;
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/emki-camp';
 
 
 main().catch(err => console.log('WE HAVE CONNECTION ERROR', err));
 async function main() {
     // 'mongodb://localhost:27017/emki-camp'
-//     await mongoose.connect('mongodb://localhost:27017/emki-camp');
+    // await mongoose.connect('mongodb://localhost:27017/emki-camp');
     await mongoose.connect(dbUrl);
     console.log('MONGO CONNECTION OPEN');
 }
 
 
+const secret = process.env.SECRET || 'topsecret';
+
+
 const store = new MongoDBStore({
-    url: 'mongodb://localhost:27017/emki-camp',
-    secret: 'topsecret',
+    url: dbUrl,
+    secret,
     touchAfter: 24 * 60 * 60
 });
 
@@ -56,7 +55,7 @@ store.on('error', function (e) {
 const sessionOptions = {
     store,
     name: 'session',
-    secret: 'topsecret',
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
